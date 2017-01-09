@@ -1,8 +1,8 @@
-#Scalable HTTP/S and TCP client sockets for the cloud
+# Scalable HTTP/S and TCP client sockets for the cloud
 
 Now that the cloud has become a core part of every developer's life, we are faced with designing scalable, distributed services that reside on these platforms ([Amazon's AWS](https://aws.amazon.com/), [Google Compute](https://cloud.google.com/compute/) and [Microsoft Azure](https://azure.microsoft.com/en-us/)) and are able to interact with other third-party facing services and middle-ware such as databases, messaging brokers, remote push messaging services and more.
 
-##The scalable client socket problem
+## The scalable client socket problem
    
 One goal we have from our services is to squeeze as much resources out of the node to handle user load and volume without adding more nodes or servers to our service.  Typical third-party services either take an approach where they offer an HTTP enabled API (such as REST/JSON) or a TCP binary protocol interface (such as remote push messaging).  Some third-party services offer their own libraries to interact with their protocol (common with databases, messaging brokers).
 
@@ -12,7 +12,7 @@ With all of these solutions you are faced with a common bottleneck, client socke
 
 Some forward thinking libraries have embedded scalable sockets into their drivers to work around these limitations, but most of the time this is focused on server sockets.  
 
-##The lack of a foundation 
+## The lack of a foundation 
 
 The team here at Grijjy was faced with the same reality.  We wanted scalable sockets for our distributed cloud services but the embedded libraries often only leverage Berkeley sockets.  While there are numerous libraries that fully exploit scalable server sockets, there are relatively few examples of scalable client sockets.  In addition, very few communication libraries or examples have built a reusable base foundation for scalable client sockets that provides a cross-platform (Windows, Linux) model where other protocols could be layered and built upon.
 
@@ -22,13 +22,13 @@ Then upon this foundation we could be build scalable client drivers, whether tho
 
 Over the coming months we will be demonstrating a variety of protocols and drivers that implement over these base classes including RabbitMQ, MongoDB, Google APIs, iOS and Android remote push message sending, etc.
 
-##Windows IO Completion Ports (IOCP)
+## Windows IO Completion Ports (IOCP)
 
 On Windows we have IO Completion Ports for scalable client sockets.  IOCP has been around for quite some time, but it is quite tricky to utilize and operations are difficult to manage so developers typically have only used it for server sockets.  This means very little is documented about using IOCP for strictly client sockets even though it is an ideal solution to scalable client sockets on Windows.
 
 A full primer on using IOCP for client scalable sockets is beyond the scope of this article, but we will are glad to provide guidance for your efforts if you need more information.
 
-##Memory pooling
+## Memory pooling
 
 In order for scalable client sockets to remain efficient, we use very small memory buffers.  Because these memory buffers are used for a single operation and must be maintained until the operation is completed, it requires us to create our own memory pooling class.  Without a memory pooling class we would be constantly allocating and releasing small blocks of memory and this operation alone could become the primary bottleneck for performance of the scalable client socket class.
 
@@ -40,7 +40,7 @@ On Linux we utilize EPOLL for scalable client sockets.  On Linux there are sever
 
 A full primer on using EPOLL for client scalable sockets is also beyond the scope of this article.
 
-##First steps
+## First steps
 
 Our first step is to create a base class designed specifically for scalable client sockets that works on both Windows and Linux.  To accomplish this objective we created the TgoSocketConnection base class.  This class abstracts the internals of managing a scalable client socket connection for the platform.  It takes care of connecting, disconnecting, sending and receiving.   It handles SSL with basic certificate support using OpenSSL internally so that other higher level protocols can use SSL, such as HTTPS.
 
@@ -135,7 +135,7 @@ Our TgoClientSocketManager helps manage the issues of releasing resources, clean
 
 The full implementation of the base socket classes for Windows is contained in the repository [https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.SocketPool.Win.pas](https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.SocketPool.Win.pas)
 
-##HTTP/S Protocol 
+## HTTP/S Protocol 
 
 The first protocol we demonstrate using scalable client sockets is a HTTP/S.  This basic implementation of HTTP and HTTPS shows how we can use scalable client sockets transparently and create a highly scalable protocol.
 
@@ -225,13 +225,13 @@ Embedded into your Windows or Linux service, this example protocol could handle 
 
 The full implementation of the base socket classes for Windows is contained in the repository [https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.Http.pas](https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.Http.pas)
 
-##Example application
+## Example application
 
 The example [DelphiScalableHttp application](https://github.com/grijjy/DelphiScalableClientSockets) demonstrates how to actually make http calls using these new classes. 
 
 ![](http://i.imgur.com/yxV5Re8.jpg)
 
-##Next steps...
+## Next steps...
 
 In coming articles we will demonstrate how to use these classes to build drivers that work with a variety of services such as iOS and Android remote push messaging (sending messages from your service), Google APIs (interacting from your service), RabbitMQ, MongoDB and much more.
 
