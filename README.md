@@ -133,7 +133,7 @@ Our TgoClientSocketManager helps manage the issues of releasing resources, clean
   end;
 ```
 
-The full implementation of the base socket classes for Windows is contained in the repository [https://github.com/grijjy/GrijjyFoundation/Grijjy.SocketPool.Win.pas](https://github.com/grijjy/GrijjyFoundation/Grijjy.SocketPool.Win.pas)
+The full implementation of the base socket classes for Windows is contained in the repository [https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.SocketPool.Win.pas](https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.SocketPool.Win.pas)
 
 ##HTTP/S Protocol 
 
@@ -223,11 +223,11 @@ Embedded into your Windows or Linux service, this example protocol could handle 
   end;
 ```
 
-The full implementation of the base socket classes for Windows is contained in the repository [https://github.com/grijjy/GrijjyFoundation/Grijjy.Http.pas](https://github.com/grijjy/GrijjyFoundation/Grijjy.Http.pas)
+The full implementation of the base socket classes for Windows is contained in the repository [https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.Http.pas](https://github.com/grijjy/GrijjyFoundation/blob/master/Grijjy.Http.pas)
 
 ##Example application
 
-The example [DelphiScalableHttp application](https://github.com/grijjy/DelphiScalableHttp) demonstrates how to actually make http calls using these new classes. 
+The example [DelphiScalableHttp application](https://github.com/grijjy/DelphiScalableClientSockets) demonstrates how to actually make http calls using these new classes. 
 
 ![](http://i.imgur.com/yxV5Re8.jpg)
 
@@ -237,6 +237,6 @@ In coming articles we will demonstrate how to use these classes to build drivers
 
 For more information about us, our support and services visit the [Grijjy homepage](http://www.grijjy.com) or the [Grijjy developers blog](http://blog.grijjy.com).
 
-The base classes described herein are part of our [Grijjy Foundation library](https://github.com/grijjy/GrijjyFoundation).  The example program is hosted on GitHub at [https://github.com/grijjy/DelphiScalableHttp](https://github.com/grijjy/DelphiScalableHttp).
+The base classes described herein are part of our [Grijjy Foundation library](https://github.com/grijjy/GrijjyFoundation).  The example program is hosted on GitHub at [https://github.com/grijjy/DelphiScalableClientSockets](https://github.com/grijjy/DelphiScalableClientSockets).
 
 Note: Linux examples are currently waiting approval and we are working to make them available as soon as possible.
