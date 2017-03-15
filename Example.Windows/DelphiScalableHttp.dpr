@@ -11,7 +11,8 @@ uses
   Grijjy.Collections in '..\..\GrijjyFoundation\Grijjy.Collections.pas',
   Grijjy.Winsock2 in '..\..\GrijjyFoundation\Grijjy.Winsock2.pas',
   Grijjy.Uri in '..\..\GrijjyFoundation\Grijjy.Uri.pas',
-  Grijjy.BinaryCoding in '..\..\GrijjyFoundation\Grijjy.BinaryCoding.pas';
+  Grijjy.BinaryCoding in '..\..\GrijjyFoundation\Grijjy.BinaryCoding.pas',
+  Nghttp2 in '..\Nghttp2.pas';
 
 {$R *.res}
 

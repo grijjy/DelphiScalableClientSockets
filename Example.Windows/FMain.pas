@@ -8,6 +8,7 @@ uses
   System.SysUtils,
   System.Variants,
   System.Classes,
+  System.Messaging,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
@@ -18,13 +19,19 @@ uses
 type
   TFormMain = class(TForm)
     EditUrl: TEdit;
-    MemoResponseContent: TMemo;
-    MemoResponseHeaders: TMemo;
+    MemoContent: TMemo;
+    MemoHeaders: TMemo;
     LabelResponseHeaders: TLabel;
     LabelResponseContent: TLabel;
     ButtonGet: TButton;
+    ButtonGetNonBlocking: TButton;
     procedure ButtonGetClick(Sender: TObject);
+    procedure ButtonGetNonBlockingClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
+    procedure HttpResponseMessageListener(const Sender: TObject;
+      const M: TMessage);
     { Private declarations }
   public
     { Public declarations }
@@ -39,15 +46,49 @@ implementation
 
 procedure TFormMain.ButtonGetClick(Sender: TObject);
 var
-  HTTP: TgoHTTPClient;
+  HTTP: TgoHttpClient;
 begin
-  HTTP := TgoHTTPClient.Create;
+  HTTP := TgoHttpClient.Create;
   try
-    MemoResponseContent.Text := HTTP.Get(EditUrl.Text, DEFAULT_TIMEOUT_RECV);
-    MemoResponseHeaders.Text := HTTP.ResponseHeaders.Text;
+    MemoContent.Text := HTTP.Get(EditUrl.Text);
+    MemoHeaders.Text := HTTP.ResponseHeaders.AsString;
   finally
     HTTP.Free;
   end;
+end;
+
+procedure TFormMain.ButtonGetNonBlockingClick(Sender: TObject);
+var
+  HTTP: TgoHttpClient;
+begin
+  HTTP := TgoHttpClient.Create(True, False);
+  try
+    HTTP.Get('https://nghttp2.org');
+  finally
+    HttpClientManager.Release(HTTP);
+  end;
+end;
+
+procedure TFormMain.HttpResponseMessageListener(const Sender: TObject;
+  const M: TMessage);
+var
+  HttpResponseMessage: TgoHttpResponseMessage;
+begin
+  HttpResponseMessage := M as TgoHttpResponseMessage;
+  MemoContent.Text := HttpResponseMessage.HttpClient.BytesToString(HttpResponseMessage.Response, HttpResponseMessage.ResponseContentCharset);
+  MemoHeaders.Text := HttpResponseMessage.ResponseHeaders.AsString;
+end;
+
+procedure TFormMain.FormCreate(Sender: TObject);
+begin
+  TMessageManager.DefaultManager.SubscribeToMessage(TgoHttpResponseMessage,
+    HttpResponseMessageListener);
+end;
+
+procedure TFormMain.FormDestroy(Sender: TObject);
+begin
+  TMessageManager.DefaultManager.Unsubscribe(TgoHttpResponseMessage,
+    HttpResponseMessageListener);
 end;
 
 end.
