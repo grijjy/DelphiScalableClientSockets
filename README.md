@@ -2,6 +2,8 @@
 
 Now that the cloud has become a core part of every developer's life, we are faced with designing scalable, distributed services that reside on these platforms ([Amazon's AWS](https://aws.amazon.com/), [Google Compute](https://cloud.google.com/compute/) and [Microsoft Azure](https://azure.microsoft.com/en-us/)) and are able to interact with other third-party facing services and middle-ware such as databases, messaging brokers, remote push messaging services and more.
 
+This is part 1 of a three part series.  For more detailed information on HTTP 1.1, HTTP/S and HTTP/2, [see Part 2](HTTP.md).  For building on Delphi for Linux, [see Part 3](LINUX.md).
+
 ## The scalable client socket problem
    
 One goal we have from our services is to squeeze as much resources out of the node to handle user load and volume without adding more nodes or servers to our service.  Typical third-party services either take an approach where they offer an HTTP enabled API (such as REST/JSON) or a TCP binary protocol interface (such as remote push messaging).  Some third-party services offer their own libraries to interact with their protocol (common with databases, messaging brokers).
@@ -140,6 +142,8 @@ The full implementation of the base socket classes for Windows is contained in t
 The first protocol we demonstrate using scalable client sockets is HTTP/S.
 
 For more detailed information on HTTP 1.1, HTTP/S and HTTP/2, [see Part 2](HTTP.md).
+
+For building on Delphi for Linux, [see Part 3](LINUX.md).
 
 ## Next steps...
 
