@@ -2,7 +2,30 @@ unit Nghttp2;
 
 { Header translation of ngHttp library for HTTP/2 protocol support, see https://nghttp2.org }
 
+{$I Grijjy.inc}
+
+{ To build the library:
+  Download the latest release from https://github.com/nghttp2/releases
+
+For Windows...
+  1.  Install CMAKE and the Build Tools for Visual Studio.
+  2.  Run CMAKE followed by a period, (ex: cmake .)
+  3.  Run CMAKE to build the release version (ex: cmake --build . --config RELEASE)
+
+For Linux...
+  1.  ./configure
+  2.  sudo make
+  3.  sudo make install
+}
+
 interface
+
+const
+  {$IF Defined(MSWINDOWS)}
+  NGHTTP2_LIB = 'nghttp2.dll';
+  {$ELSEIF Defined(LINUX)}
+  NGHTTP2_LIB = 'libnghttp2.so';
+  {$ENDIF}
 
 const
   NGHTTP2_NO_ERROR = 0;
@@ -37,16 +60,16 @@ type
 { The primary structure to hold the resources needed for a HTTP/2
   session.  The details of this structure are intentionally hidden
   from the public API. }
-  nghttp2_session = Pointer;
+  pnghttp2_session = Pointer;
 
 { Callback functions for :type:`nghttp2_session`.  The details of
   this structure are intentionally hidden from the public API. }
-  nghttp2_session_callbacks = Pointer;
+  pnghttp2_session_callbacks = Pointer;
 
 { The name/value pair, which mainly used to represent header fields. }
   nghttp2_nv = record
-    name : PAnsiChar;
-    value: PAnsiChar;
+    name : MarshaledAString;
+    value: MarshaledAString;
     namelen: size_t;
     valuelen: size_t;
     flags: uint8;
@@ -67,6 +90,7 @@ type
     settings_id: int32;
     value: uint32;
   end;
+  pnghttp2_settings_entry = ^nghttp2_settings_entry;
 
 { The frame header }
   nghttp2_frame_hd = record
@@ -125,7 +149,7 @@ type
   bytes of data from |source| (or possibly other places) and store
   them in |buf| and return number of data stored in |buf|.  If EOF is
   reached, set :enum:`NGHTTP2_DATA_FLAG_EOF` flag in |*data_flags|. }
-  nghttp2_data_source_read_callback = function(session: nghttp2_session;
+  nghttp2_data_source_read_callback = function(session: pnghttp2_session;
     stream_id: int32; buf: puint8; length: size_t;
     data_flags: puint32; source: pnghttp2_data_source; user_data: Pointer): ssize_t; cdecl;
 
@@ -144,7 +168,7 @@ type
  for the |frame|.  The |name| of length |namelen| is header name.
  The |value| of length |valuelen| is header value.  The |flags| is
  bitwise OR of one or more of :type:`nghttp2_nv_flag`. }
-  nghttp2_on_header_callback = function(session: nghttp2_session; const frame: pnghttp2_frame;
+  nghttp2_on_header_callback = function(session: pnghttp2_session; const frame: pnghttp2_frame;
     const name: puint8; namelen: size_t; const value: puint8; valuelen: size_t;
     flags: uint8; user_data: Pointer): Integer; cdecl;
 
@@ -155,7 +179,7 @@ type
  `nghttp2_session_mem_recv()` when a frame is received.  The
  |user_data| pointer is the third argument passed in to the call to
  `nghttp2_session_client_new()` or `nghttp2_session_server_new()`. }
-  nghttp2_on_frame_recv_callback = function(session: nghttp2_session;
+  nghttp2_on_frame_recv_callback = function(session: pnghttp2_session;
     const frame: pnghttp2_frame; user_data: Pointer): Integer; cdecl;
 
 type
@@ -163,7 +187,7 @@ type
 
 { Callback function invoked when a chunk of data in DATA frame is
   received.  The |stream_id| is the stream ID this DATA frame belongs to. }
-  nghttp2_on_data_chunk_recv_callback = function(session: nghttp2_session;
+  nghttp2_on_data_chunk_recv_callback = function(session: pnghttp2_session;
     flags: uint8; stream_id: int32; const data: puint8; len: size_t;
     user_data: Pointer): Integer; cdecl;
 
@@ -172,99 +196,94 @@ type
 
 { Callback function invoked when the stream |stream_id| is closed.
   The reason of closure is indicated by the |error_code| }
-  nghttp2_on_stream_close_callback = function(session: nghttp2_session;
+  nghttp2_on_stream_close_callback = function(session: pnghttp2_session;
     stream_id: int32; error_code: uint32; user_data: Pointer): Integer; cdecl;
 
 var
 { Stores local settings and submits SETTINGS frame.  The |iv| is the
   pointer to the array of :type:`nghttp2_settings_entry`.  The |niv|
   indicates the number of :type:`nghttp2_settings_entry`. }
-  nghttp2_submit_settings: function(session: nghttp2_session; flags: uint8;
-    const iv: nghttp2_settings_entry; niv: size_t): Integer; cdecl = nil;
+  nghttp2_submit_settings: function(session: pnghttp2_session; flags: uint8;
+    const iv: pnghttp2_settings_entry; niv: size_t): Integer; cdecl = nil;
 
 { Initializes |*session_ptr| for client use.  The all members of |callbacks|
   are copied to |*session_ptr|.  Therefore |*session_ptr| does not store
   |callbacks|.  The |user_data| is an arbitrary user supplied data, which
   will be passed to the callback functions. }
-  nghttp2_session_client_new: function(var session_ptr: nghttp2_session;
-    const callbacks: nghttp2_session_callbacks; user_data: Pointer): Integer; cdecl = nil;
+  nghttp2_session_client_new: function(var session_ptr: pnghttp2_session;
+    const callbacks: pnghttp2_session_callbacks; user_data: Pointer): Integer; cdecl = nil;
 
 { Initializes |*callbacks_ptr| with NULL values. }
-  nghttp2_session_callbacks_new: function(out callbacks_ptr: nghttp2_session_callbacks): Integer; cdecl = nil;
+  nghttp2_session_callbacks_new: function(out callbacks_ptr: pnghttp2_session_callbacks): Integer; cdecl = nil;
 
 { Frees any resources allocated for |callbacks|.  If |callbacks| is ``NULL``, this
   function does nothing. }
-  nghttp2_session_callbacks_del: procedure(callbacks: nghttp2_session_callbacks); cdecl = nil;
+  nghttp2_session_callbacks_del: procedure(callbacks: pnghttp2_session_callbacks); cdecl = nil;
 
 { Sets callback function invoked when a header name/value pair is received. }
-  nghttp2_session_callbacks_set_on_header_callback: procedure(callbacks: nghttp2_session_callbacks;
+  nghttp2_session_callbacks_set_on_header_callback: procedure(callbacks: pnghttp2_session_callbacks;
     on_header_callback: nghttp2_on_header_callback); cdecl = nil;
 
 { Sets callback function invoked by `nghttp2_session_recv()` and `nghttp2_session_mem_recv()`
   when a frame is received. }
-  nghttp2_session_callbacks_set_on_frame_recv_callback: procedure(callbacks: nghttp2_session_callbacks;
+  nghttp2_session_callbacks_set_on_frame_recv_callback: procedure(callbacks: pnghttp2_session_callbacks;
     on_frame_recv_callback: nghttp2_on_frame_recv_callback); cdecl = nil;
 
 { Sets callback function invoked when a chunk of data in DATA frame is received. }
-  nghttp2_session_callbacks_set_on_data_chunk_recv_callback: procedure(callbacks: nghttp2_session_callbacks;
+  nghttp2_session_callbacks_set_on_data_chunk_recv_callback: procedure(callbacks: pnghttp2_session_callbacks;
     on_data_chunk_recv_callback: nghttp2_on_data_chunk_recv_callback); cdecl = nil;
 
 { Sets callback function invoked when the stream is closed. }
-  nghttp2_session_callbacks_set_on_stream_close_callback: procedure(callbacks: nghttp2_session_callbacks;
+  nghttp2_session_callbacks_set_on_stream_close_callback: procedure(callbacks: pnghttp2_session_callbacks;
     on_stream_close_callback: nghttp2_on_stream_close_callback); cdecl = nil;
 
 { Signals the session so that the connection should be terminated. }
-  nghttp2_session_terminate_session: function(session: nghttp2_session; error_code: uint32): Integer; cdecl = nil;
+  nghttp2_session_terminate_session: function(session: pnghttp2_session; error_code: uint32): Integer; cdecl = nil;
 
 { Submits HEADERS frame and optionally one or more DATA frames. }
-  nghttp2_submit_request: function(session: nghttp2_session; const pri_spec: pnghttp2_priority_spec;
-    const nva: nghttp2_nv; nvlen: size_t; const data_prd: pnghttp2_data_provider; stream_user_data: Pointer): int32; cdecl = nil;
+  nghttp2_submit_request: function(session: pnghttp2_session; const pri_spec: pnghttp2_priority_spec;
+    const nva: pnghttp2_nv; nvlen: size_t; const data_prd: pnghttp2_data_provider; stream_user_data: Pointer): int32; cdecl = nil;
 
 { Returns stream_user_data for the stream |stream_id|. }
-  nghttp2_session_get_stream_user_data: function(session: nghttp2_session;
+  nghttp2_session_get_stream_user_data: function(session: pnghttp2_session;
     stream_id: int32): Pointer; cdecl = nil;
 
 { Processes data |in| as an input from the remote endpoint.  The
   |inlen| indicates the number of bytes in the |in|. }
-  nghttp2_session_mem_recv: function(session: nghttp2_session; const &in: Pointer; const inlen: size_t): Integer; cdecl = nil;
+  nghttp2_session_mem_recv: function(session: pnghttp2_session; const &in: Pointer; const inlen: size_t): Integer; cdecl = nil;
 
 { Returns the serialized data to send. }
-  nghttp2_session_mem_send: function(session: nghttp2_session; out data_ptr: Pointer): Integer; cdecl = nil;
+  nghttp2_session_mem_send: function(session: pnghttp2_session; out data_ptr: Pointer): Integer; cdecl = nil;
 
 { Returns nonzero value if |session| wants to receive data from the
   remote peer.  If both `nghttp2_session_want_read()` and `nghttp2_session_want_write()`
   return 0, the application should drop the connection. }
-  nghttp2_session_want_read: function(session: nghttp2_session): Integer; cdecl = nil;
+  nghttp2_session_want_read: function(session: pnghttp2_session): Integer; cdecl = nil;
 
 { Returns nonzero value if |session| wants to send data to the remote
   peer. If both `nghttp2_session_want_read()` and * `nghttp2_session_want_write()`
   return 0, the application should drop the connection. }
-  nghttp2_session_want_write: function(session: nghttp2_session): Integer; cdecl = nil;
+  nghttp2_session_want_write: function(session: pnghttp2_session): Integer; cdecl = nil;
 
-//function MAKE_NV2(name, value: PAnsiChar): nghttp2_nv;
-//function MAKE_NV(name, value: PAnsiChar; valuelen: uint8): nghttp2_nv;
+//function MAKE_NV2(name, value: MarshaledAString): nghttp2_nv;
+//function MAKE_NV(name, value: MarshaledAString; valuelen: uint8): nghttp2_nv;
 
 implementation
 
 uses
-  Classes,
+  System.Classes,
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
-  SyncObjs,
-  SysUtils;
-
-const
-  {$IFDEF MSWINDOWS}
-  NGHTTP2_LIBRARY = 'nghttp2.dll';
-  {$ENDIF}
+  System.SyncObjs,
+  System.SysUtils;
 
 var
   NGHTTP2Handle: HMODULE;
 
 { Helpers }
 
-//function MAKE_NV2(name, value: PAnsiChar): nghttp2_nv;
+//function MAKE_NV2(name, value: MarshaledAString): nghttp2_nv;
 //begin
 //  Result.name := name;
 //  Result.value := value;
@@ -273,7 +292,7 @@ var
 //  Result.flags := NGHTTP2_NV_FLAG_NONE;
 //end;
 //
-//function MAKE_NV(name, value: PAnsiChar; valuelen: uint8): nghttp2_nv;
+//function MAKE_NV(name, value: MarshaledAString; valuelen: uint8): nghttp2_nv;
 //begin
 //  Result.name := name;
 //  Result.value := value;
@@ -306,10 +325,10 @@ end;
 procedure LoadNGHTTP2;
 begin
   if (NGHTTP2Handle <> 0) then Exit;
-  NGHTTP2Handle := LoadLib(NGHTTP2_LIBRARY);
+  NGHTTP2Handle := LoadLib(NGHTTP2_LIB);
   if (NGHTTP2Handle = 0) then
   begin
-    raise Exception.CreateFmt('Load %s failed', [NGHTTP2_LIBRARY]);
+    raise Exception.CreateFmt('Load %s failed', [NGHTTP2_LIB]);
     Exit;
   end;
 
